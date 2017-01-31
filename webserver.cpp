@@ -8,6 +8,8 @@
 #include <iostream>      // for I/O
 #include <fstream>       // for file I/O
 #include <streambuf>     // for converting file stream to string
+#include <unistd.h>
+#include "request_handler.h"
 
 using namespace std;
 
@@ -67,19 +69,9 @@ int main(int argc, char *argv[])
 
     // testing file for now, need to extract the file path from request message
     string filename = "index.html";
-    ifstream requestedFile(filename); // open input file
-    if (!requestedFile) {
-      cerr << "ERROR, fail to open input file \"" << filename << "\"" << endl;
-      exit(EXIT_FAILURE);
-    }
-
-    string requestedFileContent((istreambuf_iterator<char>(requestedFile)), istreambuf_iterator<char>()); // convert to string
-    cout << requestedFileContent << endl;
-
-    if (write(newsockfd,requestedFileContent.c_str(),requestedFileContent.size()) < 0) {
-      cerr << "ERROR, fail to write to the socket" << endl;
-      exit(EXIT_FAILURE);
-    }
+    
+    Request_handler server_request_handler;
+    server_request_handler.handle_request(newsockfd, filename);
 
     close(newsockfd);
   } // automatically close the file stream
