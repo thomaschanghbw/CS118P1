@@ -8,6 +8,7 @@
 #include <iostream>      // for I/O
 #include <fstream>       // for file I/O
 #include <streambuf>     // for converting file stream to string
+#include <HTTPMessage.h>
 
 using namespace std;
 
@@ -63,7 +64,9 @@ int main(int argc, char *argv[])
       cerr << "ERROR, fail to read from the socket" << endl;
       exit(EXIT_FAILURE);
     }
-    cout << buffer << endl; //dump to the console, need to think about the case when we buffer size is not enough, eg. very long URL
+    // cout << buffer << endl; //dump to the console, need to think about the case when we buffer size is not enough, eg. very long URL
+    HTTPMessage m(buffer);
+    m.print();
 
     // testing file for now, need to extract the file path from request message
     string filename = "index.html";
@@ -74,7 +77,7 @@ int main(int argc, char *argv[])
     }
 
     string requestedFileContent((istreambuf_iterator<char>(requestedFile)), istreambuf_iterator<char>()); // convert to string
-    cout << requestedFileContent << endl;
+    // cout << requestedFileContent << endl;
 
     if (write(newsockfd,requestedFileContent.c_str(),requestedFileContent.size()) < 0) {
       cerr << "ERROR, fail to write to the socket" << endl;
