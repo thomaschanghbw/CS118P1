@@ -8,7 +8,7 @@
 #include <iostream>      // for I/O
 #include <fstream>       // for file I/O
 #include <streambuf>     // for converting file stream to string
-#include <HTTPMessage.h>
+#include <HTTPRequestMessage.h>
 
 using namespace std;
 
@@ -65,8 +65,10 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
     // cout << buffer << endl; //dump to the console, need to think about the case when we buffer size is not enough, eg. very long URL
-    HTTPMessage m(buffer);
-    m.print();
+    HTTPRequestMessage requestM(buffer);
+    cout << requestM.method() << endl;
+    cout << requestM.url() << endl;
+    cout << requestM.version() << endl;
 
     // testing file for now, need to extract the file path from request message
     string filename = "index.html";

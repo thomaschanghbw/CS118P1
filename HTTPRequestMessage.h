@@ -6,7 +6,10 @@
 
 class HTTPRequestMessage: public HTTPMessage {
 public:
-	HTTPRequestMessage(const string& buffer);
+	// Constructor
+	HTTPRequestMessage(const std::string& buffer);
+
+	// Accessor
 	std::string method() const;
 	std::string url() const;
 	std::string version() const;
