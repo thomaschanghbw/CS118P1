@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const std::string HTTPVERSION = "HTTP/1.1";
+const string HTTPVERSION = "HTTP/1.1";
 
 std::unordered_map<std::string, std::string> statusCode_phrase_map ({
 	{"200", "OK"},
@@ -19,7 +19,10 @@ std::unordered_map<std::string, std::string> statusCode_phrase_map ({
 });
 
 HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessage) {
-	// TODO: add status code later
+	if (requestMessage.version() != HTTPVERSION) {
+		_statusCode = "505";
+	}
+
 	if (requestMessage.method() != "GET") {
 		_statusCode = "400";
 		cerr << "Request Method: " << requestMessage.method() << " not implemented!" << endl; 
@@ -32,7 +35,9 @@ HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessag
       	cerr << "ERROR, fail to open input file \"" << fileName << "\"" << endl;
     }
 
-    _statusCode = "200";
+    if (_statusCode.empty()) {
+    	_statusCode = "200";
+    }
 
     string responseHeadLine = HTTPVERSION + " " + _statusCode + " " + statusCode_phrase_map[_statusCode];
     setFirstLine(responseHeadLine);
