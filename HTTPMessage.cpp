@@ -7,6 +7,8 @@
 using namespace std;
 
 // Constructor
+HTTPMessage::HTTPMessage() {}
+
 HTTPMessage::HTTPMessage(const string& message) {
 	istringstream iss(message);
 	getline(iss, _firstLine);
@@ -34,15 +36,31 @@ string HTTPMessage::entityBody() const {
 	return _entityBody;
 }
 
-// Debug
-void HTTPMessage::print(){
-	cout << _firstLine << endl;
+// Mutator
+void HTTPMessage::setFirstLine(const std::string& firstLine) {
+	_firstLine = firstLine;
+}
+
+void HTTPMessage::addHeaderLine(const std::string& headerLine) {
+	_headerLines.emplace_back(headerLine);
+}
+
+void HTTPMessage::setEntityBody(const std::string& entityBody) {
+	_entityBody = entityBody;
+}
+
+// Output
+string HTTPMessage::to_string() const {
+	string result;
+	result += _firstLine + "\n";
 
 	for (const auto& headerLine : _headerLines) {
-		cout << headerLine << endl;
+		result += headerLine + "\n";
 	}
 
-	cout << endl; // blank line
-
-	cout << _entityBody << endl;
+	if (!_entityBody.empty()) {
+		result += "\n"; // blank line
+		result += _entityBody;
+	}
+	return result;
 }

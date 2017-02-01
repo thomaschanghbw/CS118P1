@@ -7,6 +7,7 @@
 class HTTPMessage {
 public:
 	// Constructor
+	HTTPMessage();
 	HTTPMessage(const std::string& message);
 
 	// Accessor
@@ -14,8 +15,13 @@ public:
 	std::vector<std::string> headerLines() const;
 	std::string entityBody() const;
 
-	// Debug
-	void print();
+	// Mutator
+	void setFirstLine(const std::string& firstLine);
+	void addHeaderLine(const std::string& headerLine);
+	void setEntityBody(const std::string& entityBody);
+
+	// output
+	std::string to_string() const;
 
 private:
 	std::string _firstLine;

@@ -1,17 +1,17 @@
 #ifndef HTTPRESPONSEMESSAGE_INCLUDED
 #define HTTPRESPONSEMESSAGE_INCLUDED
 
+#include "HTTPMessage.h"
 #include "HTTPRequestMessage.h"
 #include <string>
 
-class HTTPResponseMessage {
+class HTTPResponseMessage: public HTTPMessage {
 public:
+	// Constructor
 	HTTPResponseMessage(const HTTPRequestMessage& requestMessage);
 
 private:
-	std::string _version;
 	std::string _statusCode;
-	std::string _phrase;
 };
 
 #endif

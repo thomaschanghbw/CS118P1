@@ -6,9 +6,9 @@
 #include <cstring>       // for string manipulation
 #include <string>        // for string manipulation
 #include <iostream>      // for I/O
-#include <fstream>       // for file I/O
-#include <streambuf>     // for converting file stream to string
+
 #include <HTTPRequestMessage.h>
+#include <HTTPResponseMessage.h>
 
 using namespace std;
 
@@ -66,28 +66,20 @@ int main(int argc, char *argv[])
     }
     // cout << buffer << endl; //dump to the console, need to think about the case when we buffer size is not enough, eg. very long URL
     HTTPRequestMessage requestM(buffer);
-    cout << requestM.method() << endl;
+    /* cout << requestM.method() << endl;
     cout << requestM.url() << endl;
-    cout << requestM.version() << endl;
+    cout << requestM.version() << endl; */
+    HTTPResponseMessage reponseM(requestM);
+    string messageToSend = reponseM.to_string();
+    cout << messageToSend << endl;
 
-    // testing file for now, need to extract the file path from request message
-    string filename = "index.html";
-    ifstream requestedFile(filename); // open input file
-    if (!requestedFile) {
-      cerr << "ERROR, fail to open input file \"" << filename << "\"" << endl;
-      exit(EXIT_FAILURE);
-    }
-
-    string requestedFileContent((istreambuf_iterator<char>(requestedFile)), istreambuf_iterator<char>()); // convert to string
-    // cout << requestedFileContent << endl;
-
-    if (write(newsockfd,requestedFileContent.c_str(),requestedFileContent.size()) < 0) {
+    if (write(newsockfd,messageToSend.c_str(),messageToSend.size()) < 0) {
       cerr << "ERROR, fail to write to the socket" << endl;
       exit(EXIT_FAILURE);
     }
 
     close(newsockfd);
-  } // automatically close the file stream
+  }
   
   return 0; // we never get here since the server is always on.
 }
