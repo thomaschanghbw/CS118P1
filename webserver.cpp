@@ -12,76 +12,76 @@
 
 using namespace std;
 
+void dieWithError(const string& errorMsg) {
+    cerr << errorMsg << endl;
+    exit(EXIT_FAILURE);
+}
+
 int main(int argc, char *argv[])
 {
-  if (argc < 2 || argc > 2) {
-    cerr << "ERROR, please provide one and only one argument to the program." << endl;
-    exit(EXIT_FAILURE);
-  }
+    if (argc < 2 || argc > 2) {
+        dieWithError("ERROR, please provide one and only one argument to the program.");
+    }
 
-  int portno = stoi(argv[1]);
-  if (portno < 0 || portno > 65536) {
-    cerr << "ERROR, please provide the correct port number." << endl;
-    exit(EXIT_FAILURE);
-  }
+    int portno = stoi(argv[1]);
+    if (portno < 1 || portno > 65535) { // 0 is reserved
+        dieWithError("ERROR, please provide the correct port number.");
+    }
 
-  // declare and initialize server address
-  struct sockaddr_in serv_addr, cli_addr;
-  memset(&serv_addr, 0, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = INADDR_ANY;
-  serv_addr.sin_port = htons(portno); // convert to net order byte
+    // declare and initialize server address
+    struct sockaddr_in serv_addr, cli_addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(portno); // convert to net order byte
 
-  // create a TCP socket (with underlying network is using IPv4)
-  int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0) {
-    cerr << "ERROR, fail to open socket" << endl;
-    exit(EXIT_FAILURE);
-  }
+    // create a TCP socket (with underlying network is using IPv4)
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        dieWithError("ERROR, fail to open socket");
+    }
 
-  // assign the local ip address and the port number to the newly created socket
-  if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    cerr << "ERROR, fail to bind" << endl;
-    exit(EXIT_FAILURE);
-  }
+    // assign the local ip address and the port number to the newly created socket
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        dieWithError("ERROR, fail to bind");
+    }
    
-  // listen for TCP connection from the client
-  listen(sockfd, 1);
+    // listen for TCP connection from the client
+    listen(sockfd, 1);
   
-  socklen_t clilen = sizeof(cli_addr);
+    socklen_t clilen = sizeof(cli_addr);
   
-  while (1) {
-    // create a connection socket dedicated to this particular client
-    int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-    if (newsockfd < 0) {
-      cerr << "ERROR, fail to accept" << endl;
-      exit(EXIT_FAILURE);
-    }
+    while (1) {
+        // create a connection socket dedicated to this particular client
+        int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        if (newsockfd < 0) {
+            dieWithError("ERROR, fail to accept");
+        }
        
-    char buffer[512];
-    memset(buffer, 0, 512);
-    if (read(newsockfd, buffer, 511) < 0) {
-      cerr << "ERROR, fail to read from the socket" << endl;
-      exit(EXIT_FAILURE);
-    }
-    // cout << buffer << endl; //dump to the console, need to think about the case when we buffer size is not enough, eg. very long URL
-    HTTPRequestMessage requestM(buffer);
-    /* cout << requestM.method() << endl;
-    cout << requestM.url() << endl;
-    cout << requestM.version() << endl; */
-    HTTPResponseMessage reponseM(requestM);
-    string messageToSend = reponseM.to_string();
-    cout << messageToSend << endl;
+        char buffer[512];
+        memset(buffer, 0, 512);
+        if (read(newsockfd, buffer, 511) < 0) {
+            dieWithError("ERROR, fail to read from the socket");
+        }
 
-    if (write(newsockfd,messageToSend.c_str(),messageToSend.size()) < 0) {
-      cerr << "ERROR, fail to write to the socket" << endl;
-      exit(EXIT_FAILURE);
-    }
+        //dump to the console, need to think about the case when we buffer size is not enough, eg. very long URL
+        cout << buffer << endl; 
+        HTTPRequestMessage requestM(buffer); // constructing request message
+        HTTPResponseMessage reponseM(requestM); // constructing response message
+        string messageToSend = reponseM.to_string();
+        // cout << messageToSend << endl; // debug
 
-    if (reponseM.Connection() == "close") {
-      close(newsockfd);
+        if (write(newsockfd,messageToSend.c_str(),messageToSend.size()) < 0) {
+            dieWithError("ERROR, fail to write to the socket");
+        }
+
+        if (reponseM.Connection() == "close") {
+            close(newsockfd);
+        } else {
+            // implement time out
+            close(newsockfd);
+        }
     }
-  }
   
-  return 0; // we never get here since the server is always on.
+    return 0; // we never get here since the server is always on.
 }

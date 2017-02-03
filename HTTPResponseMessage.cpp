@@ -23,7 +23,87 @@ std::unordered_map<std::string, std::string> statusCode_phrase_map ({
 	{"505", "HTTP Version Not Supported"}
 });
 
-// helpful function
+// helpful function declaration
+string getFileExtension(const string& fileName);
+string getCurrentTime();
+string getLastModifiedTime(const string& fileName);
+string htmlPage(const string& message);
+
+HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessage) {
+	if (requestMessage.version() != HTTPVERSION) {
+		_statusCode = "505";
+	}
+
+	if (_statusCode.empty() && requestMessage.method() != "GET") {
+		_statusCode = "400";
+		cerr << "Request Method: " << requestMessage.method() << " not implemented!" << endl; 
+	}
+
+	// if client doesn't specify file name, direct it to index.html
+	string fileName = requestMessage.url() == "/" ? "./index.html" : "." + requestMessage.url();
+	cout << requestMessage.url() << requestMessage.version();
+	ifstream requestedFile(fileName); // open input file
+    if (_statusCode.empty() && !requestedFile) {
+    	_statusCode = "404";
+      	cerr << "ERROR, fail to open input file \"" << fileName << "\"" << endl;
+    }
+
+    if (_statusCode.empty()) {
+    	_statusCode = "200";
+    }
+
+    // set status line 
+    string statusLine = HTTPVERSION + " " + _statusCode + " " + statusCode_phrase_map[_statusCode];
+    setFirstLine(statusLine);
+
+    string tmp;
+    // set entity body
+    if (_statusCode == "200") {
+    	tmp = string((istreambuf_iterator<char>(requestedFile)), istreambuf_iterator<char>());
+    } else {
+    	tmp = htmlPage(_statusCode + ": " + statusCode_phrase_map[_statusCode] + "!");
+    }
+    setEntityBody(tmp);
+
+    // set header lines
+    // connection
+    if (requestMessage.Connection() == "close") {
+    	_connection = "close";
+    	addHeaderLine(headerLine("Connection: close"));
+    } else {
+    	_connection = "keep-alive";
+    	addHeaderLine(headerLine("Connection: keep-alive")); // http by default implements persistent connection
+    }
+    // date
+    tmp = "Date: " + getCurrentTime();
+    addHeaderLine(headerLine(tmp));
+
+    // server
+    addHeaderLine(headerLine("Server: Webserver/1.0"));
+
+    // last modified
+    if (_statusCode == "200") {
+    	tmp = "Last-Modified: " + getLastModifiedTime(fileName);
+    	addHeaderLine(tmp);
+    }
+
+    // content-length
+    tmp = "Content-Length: " + std::to_string(entityBody().size());
+    addHeaderLine(headerLine(tmp));
+
+    // content type
+    if (_statusCode == "200" && getFileExtension(fileName) == "html") {
+    	addHeaderLine(headerLine("Content-Type: text/html"));
+    }
+
+} // automatically close the file stream
+
+// Accessor
+string HTTPResponseMessage::Connection() const {
+	return _connection;
+}
+
+// helpful functions
 string getFileExtension(const string& fileName) {
 	size_t i = fileName.find_last_of('.');
 	if (i != string::npos) 
@@ -53,71 +133,7 @@ string getLastModifiedTime(const string& fileName) {
   	return result; 
 }
 
-HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessage) {
-	if (requestMessage.version() != HTTPVERSION) {
-		_statusCode = "505";
-	}
-
-	if (_statusCode.empty() && requestMessage.method() != "GET") {
-		_statusCode = "400";
-		cerr << "Request Method: " << requestMessage.method() << " not implemented!" << endl; 
-	}
-
-	string fileName = "." + requestMessage.url();
-	ifstream requestedFile(fileName); // open input file
-    if (_statusCode.empty() && !requestedFile) {
-    	_statusCode = "404";
-      	cerr << "ERROR, fail to open input file \"" << fileName << "\"" << endl;
-    }
-
-    if (_statusCode.empty()) {
-    	_statusCode = "200";
-    }
-
-    // set status line 
-    string statusLine = HTTPVERSION + " " + _statusCode + " " + statusCode_phrase_map[_statusCode];
-    setFirstLine(statusLine);
-
-    // set entity body
-    string requestedFileContent((istreambuf_iterator<char>(requestedFile)), istreambuf_iterator<char>());
-    setEntityBody(requestedFileContent);
-
-    // set header lines
-    string tmp;
-    // connection
-    if (requestMessage.Connection() == "close") {
-    	_connection = "close";
-    	addHeaderLine(headerLine("Connection: close"));
-    } else {
-    	_connection = "keep-alive";
-    	addHeaderLine(headerLine("Connection: keep-alive")); // http by default implements persistent connection
-    }
-    // date
-    tmp = "Date: " + getCurrentTime();
-    addHeaderLine(headerLine(tmp));
-
-    // server
-    addHeaderLine(headerLine("Server: Webserver/1.0"));
-
-    // last modified
-    if (_statusCode == "200") {
-    	tmp = "Last-Modified: " + getLastModifiedTime(fileName);
-    	addHeaderLine(tmp);
-    }
-
-    // content-length
-    tmp = "Content-Length: " + std::to_string(requestedFileContent.size());
-    addHeaderLine(headerLine(tmp));
-
-    // content type
-    if (_statusCode == "200" && getFileExtension(fileName) == "html") {
-    	addHeaderLine(headerLine("Content-Type: text/html"));
-    }
-
-} // automatically close the file stream
-
-// Accessor
-string HTTPResponseMessage::Connection() const {
-	return _connection;
+string htmlPage(const string& message) {
+	string result = "<!DOCTYPE html>\n<html><body><h1>" + message + "</h1></body></html>";
+	return result;
 }
-

@@ -4,12 +4,16 @@
 
 using namespace std;
 
+// helpful function declaration
+string decodeURL(const string& url);
+
 // Constructor
 HTTPRequestMessage::HTTPRequestMessage(const string& buffer)
 	:HTTPMessage(buffer) {
 	string requestLine = firstLine();
 	istringstream iss(requestLine);
 	iss >> _method >> _url >> _version;
+	_url = decodeURL(_url); // take care of space in url
 
 	for (const auto& hLine : headerLines()) {
 		if (hLine.fieldName == "Host:") {
@@ -51,4 +55,20 @@ string HTTPRequestMessage::User_agent() const {
 
 string HTTPRequestMessage::Accept_language() const {
 	return _accept_language;
+}
+
+// helpful function
+string decodeURL(const string& url) {
+	string result;
+	size_t i = 0;
+	while (i < url.size()) {
+		if (i+2 < url.size() && url[i] == '%' && url.substr(i+1, 2) == "20") {
+			result += ' ';
+			i += 3;
+		} else {
+			result += url[i];
+			i += 1;
+		}
+	}
+	return result;
 }
