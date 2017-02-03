@@ -4,6 +4,12 @@
 #include <string>
 #include <vector>
 
+struct headerLine {
+	headerLine(const std::string& line);
+	std::string fieldName;
+	std::string value;
+};
+
 class HTTPMessage {
 public:
 	// Constructor
@@ -12,12 +18,12 @@ public:
 
 	// Accessor
 	std::string firstLine() const;
-	std::vector<std::string> headerLines() const;
+	std::vector<headerLine> headerLines() const;
 	std::string entityBody() const;
 
 	// Mutator
 	void setFirstLine(const std::string& firstLine);
-	void addHeaderLine(const std::string& headerLine);
+	void addHeaderLine(const headerLine& hLine);
 	void setEntityBody(const std::string& entityBody);
 
 	// output
@@ -25,7 +31,7 @@ public:
 
 private:
 	std::string _firstLine;
-	std::vector<std::string> _headerLines;
+	std::vector<headerLine> _headerLines;
 	std::string _entityBody;
 };
 

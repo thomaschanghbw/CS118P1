@@ -78,7 +78,9 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
 
-    close(newsockfd);
+    if (reponseM.Connection() == "close") {
+      close(newsockfd);
+    }
   }
   
   return 0; // we never get here since the server is always on.

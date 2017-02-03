@@ -6,6 +6,15 @@
 
 using namespace std;
 
+/* headerLine structure */
+// Construtor
+headerLine::headerLine(const string& line) {
+	size_t i = line.find_first_of(' ');
+	fieldName = line.substr(0, i);
+	value = i != string::npos ? line.substr(i+1) : "";
+}
+
+/* HTTPMessage */
 // Constructor
 HTTPMessage::HTTPMessage() {}
 
@@ -17,7 +26,8 @@ HTTPMessage::HTTPMessage(const string& message) {
 	string line;
 	while (getline(iss, line)) {
 		if (line == "") break;
-		_headerLines.emplace_back(line);
+		headerLine hLine(line); 
+		_headerLines.emplace_back(hLine);
 	}
 
 	getline(iss, _entityBody);
@@ -28,7 +38,7 @@ string HTTPMessage::firstLine() const {
 	return _firstLine;
 }
 
-vector<string> HTTPMessage::headerLines() const {
+vector<headerLine> HTTPMessage::headerLines() const {
 	return _headerLines;
 }
 
@@ -41,8 +51,8 @@ void HTTPMessage::setFirstLine(const std::string& firstLine) {
 	_firstLine = firstLine;
 }
 
-void HTTPMessage::addHeaderLine(const std::string& headerLine) {
-	_headerLines.emplace_back(headerLine);
+void HTTPMessage::addHeaderLine(const headerLine& hLine) {
+	_headerLines.emplace_back(hLine);
 }
 
 void HTTPMessage::setEntityBody(const std::string& entityBody) {
@@ -54,8 +64,8 @@ string HTTPMessage::to_string() const {
 	string result;
 	result += _firstLine + "\n";
 
-	for (const auto& headerLine : _headerLines) {
-		result += headerLine + "\n";
+	for (const auto& hLine : _headerLines) {
+		result += hLine.fieldName + " " + hLine.value + "\n";
 	}
 
 	if (!_entityBody.empty()) {

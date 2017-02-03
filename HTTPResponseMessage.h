@@ -10,8 +10,12 @@ public:
 	// Constructor
 	HTTPResponseMessage(const HTTPRequestMessage& requestMessage);
 
+	// Accessor
+	std::string Connection() const;
+
 private:
 	std::string _statusCode;
+	std::string _connection;
 };
 
 #endif
