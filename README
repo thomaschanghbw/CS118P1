@@ -3,3 +3,8 @@ make
 ./webserver + (port_number)
 make clean
 
+- only support HTTP/1.1
+- support text/html
+- support img/gif img/jpeg img/x-icon
+- support decoding url (only can decode space for now)
+
