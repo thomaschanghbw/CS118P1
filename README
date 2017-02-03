@@ -1,10 +1,18 @@
 Instruction for running the program:
-make 
-./webserver + (port_number)
-make clean
+-> put your website files in the "website" directory 
+-> go to "src" directory
+-> make 
+-> ./webserver + (port_number)
+.....: At this point, the webserver is on. 
+	   You can open the browser to connect to the server.
+       For exmpale, type "localhost:(port_number)/index.html"
+-> (ctrl + C) to stop the webserver program
+-> make clean
 
-- only support HTTP/1.1
-- support text/html
-- support img/gif img/jpeg img/x-icon
+Few notes:
+- only support HTTP/1.1, that is, if in the request message header field, version has to be specified as "http/1.1"
+- support content type: text/html img/gif img/jpeg img/x-icon
 - support decoding url (only can decode space for now)
+- the client does not specify any path, e.g: localhost:(port_numer),
+it has the same effect as: localhost:(port_numer)/index.html
 

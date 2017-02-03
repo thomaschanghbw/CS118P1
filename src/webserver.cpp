@@ -12,6 +12,8 @@
 
 using namespace std;
 
+const size_t BUFFER_SIZE = 8192;
+
 void dieWithError(const string& errorMsg) {
     cerr << errorMsg << endl;
     exit(EXIT_FAILURE);
@@ -58,9 +60,9 @@ int main(int argc, char *argv[])
             dieWithError("ERROR, fail to accept");
         }
        
-        char buffer[512];
-        memset(buffer, 0, 512);
-        if (read(newsockfd, buffer, 511) < 0) {
+        char buffer[BUFFER_SIZE];
+        memset(buffer, 0, BUFFER_SIZE);
+        if (read(newsockfd, buffer, BUFFER_SIZE-1) < 0) {
             dieWithError("ERROR, fail to read from the socket");
         }
 

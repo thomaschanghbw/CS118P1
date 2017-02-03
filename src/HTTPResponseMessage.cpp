@@ -43,7 +43,7 @@ HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessag
 	}
 
 	// if client doesn't specify file name, direct it to index.html
-	string fileName = requestMessage.url() == "/" ? "./index.html" : "." + requestMessage.url();
+	string fileName = requestMessage.url() == "/" ? "../website/index.html" : "../website" + requestMessage.url();
 	ifstream requestedFile(fileName); // open input file
     if (_statusCode.empty() && !requestedFile) {
     	_statusCode = "404";
