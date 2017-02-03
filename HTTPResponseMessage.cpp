@@ -5,6 +5,11 @@
 #include <iostream>		 // for I/O
 #include <fstream>       // for file I/O
 #include <streambuf>     // for converting file stream to string
+#include <ctime>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -19,11 +24,33 @@ std::unordered_map<std::string, std::string> statusCode_phrase_map ({
 });
 
 // helpful function
-string getFileExtension(const string& filePath) {
-	size_t i = filePath.find_last_of('.');
+string getFileExtension(const string& fileName) {
+	size_t i = fileName.find_last_of('.');
 	if (i != string::npos) 
-		return filePath.substr(i+1);
+		return fileName.substr(i+1);
 	return "";
+}
+
+string getCurrentTime() {
+  	time_t rawtime;
+  	struct tm * timeinfo;
+
+  	time(&rawtime);
+  	timeinfo = localtime(&rawtime);
+  	string result(asctime(timeinfo));
+  	result.resize(result.size()-1); // stip the new line at the end
+  	return result; 
+}
+
+string getLastModifiedTime(const string& fileName) {
+	struct stat st;
+	stat(fileName.c_str(), &st);
+
+	struct tm * timeinfo;
+  	timeinfo = localtime(&st.st_mtime);
+  	string result(asctime(timeinfo));
+  	result.resize(result.size()-1); // stip the new line at the end
+  	return result; 
 }
 
 HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessage) {
@@ -56,27 +83,34 @@ HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessag
     setEntityBody(requestedFileContent);
 
     // set header lines
+    string tmp;
     // connection
     if (requestMessage.Connection() == "close") {
     	_connection = "close";
     	addHeaderLine(headerLine("Connection: close"));
     } else {
-    	_connection = "keep-aive";
-    	addHeaderLine(headerLine("Connection: keep-aive")); // http by default implements persistent connection
+    	_connection = "keep-alive";
+    	addHeaderLine(headerLine("Connection: keep-alive")); // http by default implements persistent connection
     }
     // date
+    tmp = "Date: " + getCurrentTime();
+    addHeaderLine(headerLine(tmp));
 
     // server
-    addHeaderLine(headerLine("Webserver/1.0"));
+    addHeaderLine(headerLine("Server: Webserver/1.0"));
 
     // last modified
+    if (_statusCode == "200") {
+    	tmp = "Last-Modified: " + getLastModifiedTime(fileName);
+    	addHeaderLine(tmp);
+    }
 
     // content-length
-    string line = "Content-Length: " + std::to_string(requestedFileContent.length());
-    addHeaderLine(headerLine(line));
+    tmp = "Content-Length: " + std::to_string(requestedFileContent.size());
+    addHeaderLine(headerLine(tmp));
 
     // content type
-    if (getFileExtension(fileName) == "html") {
+    if (_statusCode == "200" && getFileExtension(fileName) == "html") {
     	addHeaderLine(headerLine("Content-Type: text/html"));
     }
 
