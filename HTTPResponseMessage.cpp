@@ -5,7 +5,10 @@
 #include <iostream>		 // for I/O
 #include <fstream>       // for file I/O
 #include <streambuf>     // for converting file stream to string
+#include <iterator>
+#include <algorithm>
 #include <ctime>
+#include <cctype>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,7 +44,6 @@ HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessag
 
 	// if client doesn't specify file name, direct it to index.html
 	string fileName = requestMessage.url() == "/" ? "./index.html" : "." + requestMessage.url();
-	cout << requestMessage.url() << requestMessage.version();
 	ifstream requestedFile(fileName); // open input file
     if (_statusCode.empty() && !requestedFile) {
     	_statusCode = "404";
@@ -92,8 +94,19 @@ HTTPResponseMessage::HTTPResponseMessage(const HTTPRequestMessage& requestMessag
     addHeaderLine(headerLine(tmp));
 
     // content type
-    if (_statusCode == "200" && getFileExtension(fileName) == "html") {
-    	addHeaderLine(headerLine("Content-Type: text/html"));
+    if (_statusCode == "200") {
+    	string ext = getFileExtension(fileName);
+    	string ext_low;
+    	std::transform(ext.begin(), ext.end(), back_inserter(ext_low), ::tolower);
+    	if (ext_low == "html") {
+    		addHeaderLine(headerLine("Content-Type: text/html"));
+    	} else if (ext_low == "gif") {
+    		addHeaderLine(headerLine("Content-Type: img/gif"));
+    	} else if (ext_low == "jpeg" || ext_low == "jpg") {
+    		addHeaderLine(headerLine("Content-Type: img/jpeg"));
+    	} else if (ext_low == "ico") {
+    		addHeaderLine(headerLine("Content-Type: img/x-icon"));
+    	}
     }
 
 } // automatically close the file stream
