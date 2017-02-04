@@ -1,8 +1,14 @@
+Zhi Li (504341757) 
+Thomas Chang (004632787)
+
 Instruction for running the program:
--> put your website files in the "website" directory 
+-> put your website files in the "website" directory (and delete the current test files)
 -> go to "src" directory
 -> make 
--> ./webserver + (port_number)
+-> ----- per Client Process mode 
+   ./webserver + (port_number) 
+OR ----- constrained multitasking mode
+   ./webserver + (port_number) + (max_number_process) perClientProcess mode
 .....: At this point, the webserver is on. 
 	   You can open the browser to connect to the server.
        For exmpale, type "localhost:(port_number)/index.html"
@@ -16,3 +22,5 @@ Few notes:
 - the client does not specify any path, e.g: localhost:(port_numer),
 it has the same effect as: localhost:(port_numer)/index.html
 
+***************
+** important ** if using constrained multitasking mode, once the program runs, the processes will fork and you will have no control over it. The easiest way to shut down the program at that point is to restart the computer.
